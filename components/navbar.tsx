@@ -59,9 +59,11 @@ export function Navbar() {
             Sign In
           </Button>
         </Link>
-        <Button className="text-sm bg-accent hover:bg-accent/90 text-accent-foreground">
-          Get Early Access
-        </Button>
+        <Link href="/signup">
+          <Button className="text-sm bg-accent hover:bg-accent/90 text-accent-foreground">
+            Get Early Access
+          </Button>
+        </Link>
       </div>
 
       {/* Mobile Menu Button */}
@@ -100,9 +102,11 @@ export function Navbar() {
                   Sign In
                 </Button>
               </Link>
-              <Button className="text-sm w-full bg-accent hover:bg-accent/90 text-accent-foreground">
-                Get Early Access
-              </Button>
+              <Link href="/signup" className="w-full">
+                <Button className="text-sm w-full bg-accent hover:bg-accent/90 text-accent-foreground">
+                  Get Early Access
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
