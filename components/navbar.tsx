@@ -54,9 +54,11 @@ export function Navbar() {
 
       {/* Desktop CTAs */}
       <div className="hidden md:flex items-center gap-3">
-        <Button variant="outline" className="text-sm">
-          Sign In
-        </Button>
+        <Link href="/signin">
+          <Button variant="outline" className="text-sm">
+            Sign In
+          </Button>
+        </Link>
         <Button className="text-sm bg-accent hover:bg-accent/90 text-accent-foreground">
           Get Early Access
         </Button>
@@ -93,9 +95,11 @@ export function Navbar() {
               </Link>
             ))}
             <div className="flex flex-col gap-2 pt-2 border-t border-border">
-              <Button variant="outline" className="text-sm w-full">
-                Sign In
-              </Button>
+              <Link href="/signin" className="w-full">
+                <Button variant="outline" className="text-sm w-full">
+                  Sign In
+                </Button>
+              </Link>
               <Button className="text-sm w-full bg-accent hover:bg-accent/90 text-accent-foreground">
                 Get Early Access
               </Button>

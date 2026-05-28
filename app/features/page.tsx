@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Navbar } from '@/components/navbar';
+import { Footer } from '@/components/footer';
 import { ArrowRight, Brain, Zap, Lock, Search, Share2, BarChart3, Palette } from 'lucide-react';
 
 export const metadata = {
@@ -185,11 +186,7 @@ export default function FeaturesPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border px-6 md:px-12 py-12 md:py-16 bg-card/50">
-        <div className="max-w-6xl mx-auto text-center text-sm text-foreground/60">
-          <p>© {new Date().getFullYear()} FlowNote. Made with care for clear thinking.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
