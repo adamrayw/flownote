@@ -1,37 +1,12 @@
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Zap, Brain, Lock, Sparkles, Check } from 'lucide-react';
+import { Navbar } from '@/components/navbar';
 
 export default function Page() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       {/* Navigation */}
-      <nav className="flex items-center justify-between border-b border-border px-6 py-4 md:px-12 md:py-6">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-accent text-accent-foreground font-bold text-lg">
-            F
-          </div>
-          <span className="text-xl font-semibold text-foreground">FlowNote</span>
-        </div>
-        <div className="flex items-center gap-8">
-          <div className="hidden md:flex gap-8">
-            <a href="#features" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
-              Features
-            </a>
-            <a href="#benefits" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
-              Benefits
-            </a>
-            <a href="#pricing" className="text-sm text-foreground/70 hover:text-foreground transition-colors">
-              Pricing
-            </a>
-          </div>
-          <Button variant="outline" className="text-sm">
-            Sign In
-          </Button>
-          <Button className="text-sm bg-accent hover:bg-accent/90 text-accent-foreground">
-            Get Started Free
-          </Button>
-        </div>
-      </nav>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="flex flex-col items-center justify-center px-6 py-24 md:py-32 lg:py-40 text-center">
