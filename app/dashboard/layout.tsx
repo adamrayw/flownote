@@ -2,7 +2,7 @@
 
 import { DashboardSidebar } from '@/components/dashboard-sidebar';
 import { DashboardHeader } from '@/components/dashboard-header';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 
 export default function DashboardLayout({
   children,
@@ -26,7 +26,9 @@ export default function DashboardLayout({
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <DashboardHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        <Suspense fallback={<div className="h-[73px] border-b border-border bg-card/50 backdrop-blur-sm" />}>
+          <DashboardHeader onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        </Suspense>
         <main className="flex-1 overflow-auto">
           {children}
         </main>

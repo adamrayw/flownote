@@ -27,29 +27,6 @@ export default function AboutPage() {
     },
   ];
 
-  const team = [
-    {
-      name: 'Sarah Chen',
-      role: 'Founder & CEO',
-      bio: 'Former product designer at Linear. Obsessed with how tools shape thinking.',
-    },
-    {
-      name: 'Marcus Rodriguez',
-      role: 'Head of Engineering',
-      bio: 'Built infrastructure at Vercel. Passionate about performance and developer experience.',
-    },
-    {
-      name: 'Emily Watson',
-      role: 'Head of Design',
-      bio: 'Design systems specialist. Believes beautiful interfaces enable better thinking.',
-    },
-    {
-      name: 'David Kim',
-      role: 'Product Manager',
-      bio: 'Previously at Notion. Expert in understanding user workflows and needs.',
-    },
-  ];
-
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
@@ -124,41 +101,47 @@ export default function AboutPage() {
       <section className="px-6 md:px-12 py-24 bg-card/50">
         <div className="max-w-6xl mx-auto">
           <div className="text-center space-y-4 mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground">Our Team</h2>
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground">Built by raytech.cloud</h2>
             <p className="text-lg text-foreground/60 max-w-2xl mx-auto">
-              A small group of people obsessed with building the best thinking tool on the internet.
+              FlowNote is a founder-led product, built independently with an obsession for UX quality, speed, and real-world workflows.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {team.map((member) => (
-              <div key={member.name} className="text-center">
-                <div className="w-32 h-32 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 border border-accent/20 mx-auto mb-4 flex items-center justify-center">
-                  <div className="w-28 h-28 rounded-lg bg-accent/10 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-accent/40">{member.name.charAt(0)}</span>
+          <div className="max-w-3xl mx-auto">
+            <div className="rounded-xl border border-border bg-background p-8">
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                <div className="w-28 h-28 rounded-xl bg-gradient-to-br from-accent/20 to-accent/5 border border-accent/20 flex items-center justify-center shrink-0">
+                  <div className="w-24 h-24 rounded-lg bg-accent/10 flex items-center justify-center">
+                    <span className="text-2xl font-bold text-accent/50">R</span>
                   </div>
                 </div>
-                <h3 className="text-lg font-bold text-foreground mb-1">{member.name}</h3>
-                <p className="text-sm font-medium text-accent mb-2">{member.role}</p>
-                <p className="text-sm text-foreground/60 leading-relaxed">{member.bio}</p>
+
+                <div className="text-center md:text-left">
+                  <h3 className="text-2xl font-bold text-foreground">Founder, raytech.cloud</h3>
+                  <p className="text-sm font-medium text-accent mt-1 mb-3">Independent Builder</p>
+                  <p className="text-foreground/70 leading-relaxed">
+                    FlowNote is built hands-on by the founder of raytech.cloud, from user research to product delivery.
+                    The goal is simple: fast, focused note-taking that feels effortless every day.
+                  </p>
+                </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Hiring CTA */}
+      {/* Builder CTA */}
       <section className="px-6 md:px-12 py-24">
         <div className="max-w-4xl mx-auto text-center space-y-8 bg-gradient-to-br from-accent/10 via-background to-background border border-accent/20 rounded-xl p-12">
           <div className="space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground">We&apos;re Hiring</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground">Follow the Build Journey</h2>
             <p className="text-lg text-foreground/60">
-              Love building tools that shape how people think? Come join our team.
+              Have a feature request or workflow idea for FlowNote? Share it and help shape the product roadmap.
             </p>
           </div>
 
           <Button className="h-12 px-8 bg-accent hover:bg-accent/90 text-accent-foreground font-medium rounded-lg flex items-center gap-2 justify-center mx-auto">
-            View Open Positions <ArrowRight className="w-4 h-4" />
+            Share Your Feedback <ArrowRight className="w-4 h-4" />
           </Button>
         </div>
       </section>

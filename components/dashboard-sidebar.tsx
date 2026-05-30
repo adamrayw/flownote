@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Heart, Archive, Tag, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, FileText, Heart, Archive, Tag, Settings, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { href: '/dashboard/notes', label: 'Notes', icon: FileText },
   { href: '/dashboard/favorites', label: 'Favorites', icon: Heart },
   { href: '/dashboard/archived', label: 'Archived', icon: Archive },
+  { href: '/dashboard/ai', label: 'AI', icon: Sparkles },
   { href: '/dashboard/tags', label: 'Tags', icon: Tag },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ];

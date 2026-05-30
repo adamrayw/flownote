@@ -5,26 +5,49 @@ import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 export default function SignIn() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      // Handle sign-in logic here
-    }, 1500);
+
+    const result = await signIn('credentials', {
+      email,
+      password,
+      remember: rememberMe ? 'true' : 'false',
+      redirect: false,
+    });
+
+    setIsLoading(false);
+
+    if (result?.ok) {
+      router.push('/dashboard');
+      router.refresh();
+      return;
+    }
+
+    const authError = result?.error ? decodeURIComponent(result.error) : '';
+    if (authError.includes('Too many login attempts')) {
+      setError(authError);
+      return;
+    }
+
+    setError('Invalid email or password');
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header with back button */}
       <div className="px-6 py-4 md:px-12 md:py-6 border-b border-border">
         <Link href="/" className="inline-flex items-center gap-2 text-foreground/70 hover:text-foreground transition-colors">
           <ArrowLeft className="w-4 h-4" />
@@ -32,10 +55,8 @@ export default function SignIn() {
         </Link>
       </div>
 
-      {/* Main content */}
       <div className="flex-1 flex items-center justify-center px-6 py-12 md:py-16">
         <div className="w-full max-w-md">
-          {/* Logo and branding */}
           <div className="text-center mb-12">
             <div className="flex items-center justify-center gap-2 mb-4">
               <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-accent text-accent-foreground font-bold text-xl">
@@ -50,9 +71,7 @@ export default function SignIn() {
             <p className="text-foreground/60">Sign in to your FlowNote account to continue</p>
           </div>
 
-          {/* Sign-in form */}
           <form onSubmit={handleSignIn} className="space-y-5">
-            {/* Email field */}
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium text-foreground">
                 Email address
@@ -68,7 +87,6 @@ export default function SignIn() {
               />
             </div>
 
-            {/* Password field */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label htmlFor="password" className="text-sm font-medium text-foreground">
@@ -93,16 +111,23 @@ export default function SignIn() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/50 hover:text-foreground transition-colors"
                 >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
-            {/* Sign in button */}
+            <label className="flex items-center gap-3 text-sm text-foreground/80 select-none">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="h-4 w-4 rounded border-border accent-accent"
+              />
+              Remember me for 30 days
+            </label>
+
+            {error ? <p className="text-sm text-red-500">{error}</p> : null}
+
             <Button
               type="submit"
               disabled={isLoading}
@@ -112,24 +137,21 @@ export default function SignIn() {
             </Button>
           </form>
 
-          {/* Divider */}
           <div className="my-6 flex items-center gap-3">
             <div className="flex-1 h-px bg-border" />
             <span className="text-xs text-foreground/50 font-medium">Or continue with</span>
             <div className="flex-1 h-px bg-border" />
           </div>
 
-          {/* OAuth buttons */}
           <div className="grid grid-cols-2 gap-3">
-            <Button variant="outline" className="h-11 font-medium rounded-lg">
+            <Button variant="outline" className="h-11 font-medium rounded-lg" disabled>
               GitHub
             </Button>
-            <Button variant="outline" className="h-11 font-medium rounded-lg">
+            <Button variant="outline" className="h-11 font-medium rounded-lg" disabled>
               Google
             </Button>
           </div>
 
-          {/* Sign up link */}
           <p className="text-center text-sm text-foreground/60 mt-8">
             Don&apos;t have an account?{' '}
             <Link href="/signup" className="font-semibold text-accent hover:text-accent/80 transition-colors">
@@ -137,7 +159,6 @@ export default function SignIn() {
             </Link>
           </p>
 
-          {/* Terms and privacy */}
           <p className="text-center text-xs text-foreground/50 mt-6">
             By signing in, you agree to our{' '}
             <Link href="/terms" className="hover:text-foreground/70 transition-colors underline underline-offset-2">
@@ -151,9 +172,10 @@ export default function SignIn() {
         </div>
       </div>
 
-      {/* Footer branding */}
       <div className="border-t border-border px-6 py-6 md:px-12 text-center text-xs text-foreground/50">
-        <p>A premium note-taking experience by <span className="font-medium text-foreground/70">raytech.cloud</span></p>
+        <p>
+          A premium note-taking experience by <span className="font-medium text-foreground/70">raytech.cloud</span>
+        </p>
       </div>
     </div>
   );

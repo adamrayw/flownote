@@ -1,17 +1,174 @@
 'use client';
 
+import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
-import { Settings, Bell, Lock, Palette, LogOut } from 'lucide-react';
-import { useState } from 'react';
+import { Lock, Settings, User } from 'lucide-react';
+
+type MeResponse = {
+  user: {
+    id: string;
+    name: string | null;
+    email: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+};
+
+function formatDate(value: string) {
+  return new Date(value).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
 
 export default function SettingsPage() {
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [pushNotifications, setPushNotifications] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
+  const { update } = useSession();
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [createdAt, setCreatedAt] = useState('');
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [profileError, setProfileError] = useState('');
+  const [profileSuccess, setProfileSuccess] = useState('');
+
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+
+  useEffect(() => {
+    let active = true;
+
+    const run = async () => {
+      try {
+        setLoadError('');
+        setIsLoading(true);
+
+        const response = await fetch('/api/me', { cache: 'no-store' });
+        if (!response.ok) {
+          const data = (await response.json().catch(() => null)) as { message?: string } | null;
+          throw new Error(data?.message ?? 'Failed to load account settings');
+        }
+
+        const data = (await response.json()) as MeResponse;
+        if (!active) {
+          return;
+        }
+
+        setFullName(data.user.name ?? '');
+        setEmail(data.user.email);
+        setCreatedAt(data.user.createdAt);
+      } catch (error) {
+        if (active) {
+          setLoadError(error instanceof Error ? error.message : 'Failed to load account settings');
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    void run();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const memberSinceLabel = useMemo(() => {
+    if (!createdAt) {
+      return '-';
+    }
+    return formatDate(createdAt);
+  }, [createdAt]);
+
+  const handleUpdateProfile = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    setProfileError('');
+    setProfileSuccess('');
+    setIsSavingProfile(true);
+
+    try {
+      const response = await fetch('/api/me', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: fullName,
+          email,
+        }),
+      });
+
+      const data = (await response.json().catch(() => null)) as MeResponse | { message?: string } | null;
+      if (!response.ok) {
+        const message = (data as { message?: string } | null)?.message ?? 'Failed to update account';
+        throw new Error(message);
+      }
+
+      const updatedUser = (data as MeResponse).user;
+      setFullName(updatedUser.name ?? '');
+      setEmail(updatedUser.email);
+      setProfileSuccess('Account updated successfully');
+
+      await update({
+        name: updatedUser.name,
+        email: updatedUser.email,
+      });
+    } catch (error) {
+      setProfileError(error instanceof Error ? error.message : 'Failed to update account');
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
+  const handleChangePassword = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    setPasswordError('');
+    setPasswordSuccess('');
+    setIsSavingPassword(true);
+
+    try {
+      const response = await fetch('/api/me/password', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+          confirmPassword,
+        }),
+      });
+
+      const data = (await response.json().catch(() => null)) as { message?: string } | null;
+      if (!response.ok) {
+        throw new Error(data?.message ?? 'Failed to change password');
+      }
+
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setPasswordSuccess('Password updated successfully');
+    } catch (error) {
+      setPasswordError(error instanceof Error ? error.message : 'Failed to change password');
+    } finally {
+      setIsSavingPassword(false);
+    }
+  };
 
   return (
     <div className="flex-1 p-6 md:p-8 max-w-4xl mx-auto w-full">
-      {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-3 rounded-lg bg-accent/10">
@@ -19,143 +176,105 @@ export default function SettingsPage() {
           </div>
           <h1 className="text-3xl font-bold text-foreground">Settings</h1>
         </div>
-        <p className="text-foreground/60">Manage your account and preferences</p>
+        <p className="text-foreground/60">Manage your account profile and password.</p>
       </div>
 
-      {/* Settings Sections */}
+      {loadError ? <p className="text-sm text-red-500 mb-4">{loadError}</p> : null}
+
       <div className="space-y-6">
-        {/* Account Section */}
-        <div className="p-6 rounded-lg border border-border bg-card/50">
-          <h2 className="text-xl font-semibold text-foreground mb-4">Account</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Full Name</label>
-              <input
-                type="text"
-                defaultValue="Jane Doe"
-                className="w-full px-4 py-2 rounded-lg bg-muted border border-border focus:outline-none focus:ring-2 focus:ring-accent/50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">Email</label>
-              <input
-                type="email"
-                defaultValue="jane@example.com"
-                className="w-full px-4 py-2 rounded-lg bg-muted border border-border focus:outline-none focus:ring-2 focus:ring-accent/50"
-              />
-            </div>
-            <Button variant="outline">Update Account</Button>
-          </div>
-        </div>
-
-        {/* Notifications Section */}
         <div className="p-6 rounded-lg border border-border bg-card/50">
           <div className="flex items-center gap-3 mb-4">
-            <Bell size={20} className="text-accent" />
-            <h2 className="text-xl font-semibold text-foreground">Notifications</h2>
+            <User size={20} className="text-accent" />
+            <h2 className="text-xl font-semibold text-foreground">Account</h2>
           </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
+
+          {isLoading ? (
+            <p className="text-sm text-foreground/60">Loading account...</p>
+          ) : (
+            <form className="space-y-4" onSubmit={handleUpdateProfile}>
               <div>
-                <p className="font-medium text-foreground">Email Notifications</p>
-                <p className="text-sm text-foreground/60">Receive updates via email</p>
+                <label className="block text-sm font-medium text-foreground mb-2">Full Name</label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(event) => setFullName(event.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-background border border-border focus:outline-none focus:ring-2 focus:ring-accent/50"
+                  placeholder="Your full name"
+                />
               </div>
-              <button
-                onClick={() => setEmailNotifications(!emailNotifications)}
-                className={`w-12 h-6 rounded-full transition-colors ${
-                  emailNotifications ? 'bg-accent' : 'bg-foreground/20'
-                }`}
-              >
-                <div
-                  className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                    emailNotifications ? 'translate-x-6' : 'translate-x-0.5'
-                  }`}
-                ></div>
-              </button>
-            </div>
-            <div className="flex items-center justify-between border-t border-border/50 pt-4">
               <div>
-                <p className="font-medium text-foreground">Push Notifications</p>
-                <p className="text-sm text-foreground/60">Get real-time updates</p>
+                <label className="block text-sm font-medium text-foreground mb-2">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  className="w-full px-4 py-2 rounded-lg bg-background border border-border focus:outline-none focus:ring-2 focus:ring-accent/50"
+                  placeholder="name@example.com"
+                />
               </div>
-              <button
-                onClick={() => setPushNotifications(!pushNotifications)}
-                className={`w-12 h-6 rounded-full transition-colors ${
-                  pushNotifications ? 'bg-accent' : 'bg-foreground/20'
-                }`}
-              >
-                <div
-                  className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                    pushNotifications ? 'translate-x-6' : 'translate-x-0.5'
-                  }`}
-                ></div>
-              </button>
-            </div>
-          </div>
+              <p className="text-xs text-foreground/50">Member since {memberSinceLabel}</p>
+
+              {profileError ? <p className="text-sm text-red-500">{profileError}</p> : null}
+              {profileSuccess ? <p className="text-sm text-emerald-600">{profileSuccess}</p> : null}
+
+              <Button type="submit" disabled={isSavingProfile} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                {isSavingProfile ? 'Saving...' : 'Update Account'}
+              </Button>
+            </form>
+          )}
         </div>
 
-        {/* Appearance Section */}
-        <div className="p-6 rounded-lg border border-border bg-card/50">
-          <div className="flex items-center gap-3 mb-4">
-            <Palette size={20} className="text-accent" />
-            <h2 className="text-xl font-semibold text-foreground">Appearance</h2>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium text-foreground">Dark Mode</p>
-                <p className="text-sm text-foreground/60">Use dark theme for better visibility at night</p>
-              </div>
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className={`w-12 h-6 rounded-full transition-colors ${
-                  darkMode ? 'bg-accent' : 'bg-foreground/20'
-                }`}
-              >
-                <div
-                  className={`w-5 h-5 rounded-full bg-white transition-transform ${
-                    darkMode ? 'translate-x-6' : 'translate-x-0.5'
-                  }`}
-                ></div>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Security Section */}
         <div className="p-6 rounded-lg border border-border bg-card/50">
           <div className="flex items-center gap-3 mb-4">
             <Lock size={20} className="text-accent" />
             <h2 className="text-xl font-semibold text-foreground">Security</h2>
           </div>
-          <div className="space-y-3">
-            <Button variant="outline" className="w-full justify-start">
-              <Lock size={16} className="mr-2" />
-              Change Password
-            </Button>
-            <Button variant="outline" className="w-full justify-start">
-              Two-Factor Authentication
-            </Button>
-          </div>
-        </div>
 
-        {/* Danger Zone */}
-        <div className="p-6 rounded-lg border border-destructive/50 bg-destructive/5">
-          <h2 className="text-xl font-semibold text-destructive mb-4">Danger Zone</h2>
-          <p className="text-sm text-foreground/60 mb-4">
-            These actions cannot be undone. Please be careful.
-          </p>
-          <div className="space-y-2">
-            <Button variant="outline" className="w-full justify-start text-destructive hover:text-destructive">
-              <LogOut size={16} className="mr-2" />
-              Sign Out from All Devices
+          <form className="space-y-4" onSubmit={handleChangePassword}>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">Current Password</label>
+              <input
+                type="password"
+                value={currentPassword}
+                onChange={(event) => setCurrentPassword(event.target.value)}
+                className="w-full px-4 py-2 rounded-lg bg-background border border-border focus:outline-none focus:ring-2 focus:ring-accent/50"
+                autoComplete="current-password"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">New Password</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+                className="w-full px-4 py-2 rounded-lg bg-background border border-border focus:outline-none focus:ring-2 focus:ring-accent/50"
+                autoComplete="new-password"
+              />
+              <p className="text-xs text-foreground/50 mt-1">Minimum 8 characters.</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">Confirm New Password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                className="w-full px-4 py-2 rounded-lg bg-background border border-border focus:outline-none focus:ring-2 focus:ring-accent/50"
+                autoComplete="new-password"
+              />
+            </div>
+
+            {passwordError ? <p className="text-sm text-red-500">{passwordError}</p> : null}
+            {passwordSuccess ? <p className="text-sm text-emerald-600">{passwordSuccess}</p> : null}
+
+            <Button type="submit" disabled={isSavingPassword} className="bg-accent hover:bg-accent/90 text-accent-foreground">
+              {isSavingPassword ? 'Updating...' : 'Change Password'}
             </Button>
-            <Button variant="outline" className="w-full justify-start text-destructive hover:text-destructive">
-              Delete Account
-            </Button>
-          </div>
+          </form>
         </div>
       </div>
     </div>
   );
 }
+
