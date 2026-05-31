@@ -9,10 +9,11 @@ export type RaytechUser = {
 const fallbackAuthBaseUrl = "http://localhost:3003";
 const fallbackAppBaseUrl = "http://localhost:3000";
 
-export const raytechAuthBaseUrl =
-  process.env.NEXT_PUBLIC_AUTH_URL ||
+const configuredAuthBaseUrl =
   process.env.RAYTECH_AUTH_URL ||
-  fallbackAuthBaseUrl;
+  process.env.NEXT_PUBLIC_AUTH_URL;
+
+export const raytechAuthBaseUrl = configuredAuthBaseUrl || fallbackAuthBaseUrl;
 
 export const flownoteAppBaseUrl =
   process.env.NEXT_PUBLIC_APP_URL ||
