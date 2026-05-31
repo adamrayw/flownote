@@ -23,6 +23,14 @@ export const raytechSessionCookieName =
   process.env.COOKIE_NAME ||
   "raytech_session";
 
+export const raytechSessionCookieNames = Array.from(
+  new Set(
+    raytechSessionCookieName.startsWith("__Secure-")
+      ? [raytechSessionCookieName, raytechSessionCookieName.replace(/^__Secure-/, "")]
+      : [raytechSessionCookieName, `__Secure-${raytechSessionCookieName}`],
+  ),
+);
+
 
 const LOCAL_PASSWORD_PLACEHOLDER = "__managed_by_raytech_account__";
 

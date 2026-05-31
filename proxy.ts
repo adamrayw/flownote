@@ -1,9 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { raytechSessionCookieName, resolveProductReturnTo } from "@/lib/raytech-account";
+import { raytechSessionCookieNames, resolveProductReturnTo } from "@/lib/raytech-account";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const sessionCookie = request.cookies.get(raytechSessionCookieName)?.value;
+  const sessionCookie = raytechSessionCookieNames
+    .map((cookieName) => request.cookies.get(cookieName)?.value)
+    .find(Boolean);
   const isAuthenticated = Boolean(sessionCookie);
 
   if (pathname.startsWith("/dashboard") && !isAuthenticated) {
