@@ -3,12 +3,13 @@
 import { Button } from '@/components/ui/button';
 import { Eye, EyeOff, ArrowLeft, Github, Mail } from 'lucide-react';
 import Link from 'next/link';
-import { FormEvent, useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { FormEvent, useEffect, useState } from 'react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 export default function SignUpPage() {
   const router = useRouter();
+  const { status } = useSession();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -22,6 +23,16 @@ export default function SignUpPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.replace('/dashboard');
+    }
+  }, [router, status]);
+
+  if (status === 'loading' || status === 'authenticated') {
+    return <div className="min-h-screen bg-background grid place-items-center text-sm text-foreground/60">Checking session...</div>;
+  }
 
   const calculatePasswordStrength = (pwd: string) => {
     let strength = 0;

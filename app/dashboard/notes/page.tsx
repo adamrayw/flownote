@@ -3,7 +3,8 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Plus, Search, Pencil, Trash2, X, Heart, Archive } from 'lucide-react';
+import Link from 'next/link';
+import { Plus, Search, Pencil, Trash2, X, Heart, Archive, Eye } from 'lucide-react';
 import { NoteMarkdown } from '@/components/note-markdown';
 
 type Tag = {
@@ -765,6 +766,7 @@ function NotesPageContent() {
 
           <div>
             <p className="text-sm font-medium text-foreground mb-2">Tags</p>
+            <p className="text-xs text-foreground/60 mb-2">Please select tags.</p>
             <div className="flex flex-wrap gap-2">
               {tags.length === 0 ? (
                 <span className="text-sm text-foreground/60">No tags yet. Create tags in the Tags page.</span>
@@ -818,8 +820,19 @@ function NotesPageContent() {
           {notes.map((note) => (
             <article key={note.id} className="p-5 rounded-lg border border-border bg-card/50">
               <div className="flex items-start justify-between gap-3">
-                <h3 className="font-semibold text-foreground line-clamp-2">{note.title}</h3>
+                <Link href={`/dashboard/notes/${note.id}`} className="min-w-0">
+                  <h3 className="font-semibold text-foreground line-clamp-2 hover:text-accent transition-colors">
+                    {note.title}
+                  </h3>
+                </Link>
                 <div className="flex items-center gap-2">
+                  <Link
+                    href={`/dashboard/notes/${note.id}`}
+                    className="p-1.5 rounded hover:bg-muted text-foreground/60 hover:text-foreground"
+                    aria-label="View note details"
+                  >
+                    <Eye size={15} />
+                  </Link>
                   <button
                     onClick={() => handleToggleFavorite(note)}
                     className={`p-1.5 rounded transition-colors ${
@@ -855,10 +868,12 @@ function NotesPageContent() {
                 </div>
               </div>
 
-              <NoteMarkdown
-                content={note.content || 'No content yet.'}
-                className="text-sm text-foreground/70 mt-2 max-h-24 overflow-hidden"
-              />
+              <Link href={`/dashboard/notes/${note.id}`}>
+                <NoteMarkdown
+                  content={note.content || 'No content yet.'}
+                  className="text-sm text-foreground/70 mt-2 max-h-24 overflow-hidden hover:text-foreground/85 transition-colors"
+                />
+              </Link>
 
               <div className="flex flex-wrap gap-2 mt-4">
                 {note.tags.map((tag) => (

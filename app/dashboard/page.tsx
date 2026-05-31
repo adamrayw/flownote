@@ -217,7 +217,7 @@ export default function DashboardPage() {
             {recentNotes.map((note) => (
               <Link
                 key={note.id}
-                href="/dashboard/notes"
+                href={`/dashboard/notes/${note.id}`}
                 className="group p-5 rounded-lg border border-border bg-card/50 hover:border-accent/30 hover:bg-card/80 transition-all"
               >
                 <div className="flex items-start justify-between mb-2 gap-3">

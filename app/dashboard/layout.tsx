@@ -13,8 +13,8 @@ export default function DashboardLayout({
 
   return (
     <div className="flex h-screen bg-background">
-      {/* Desktop Sidebar */}
-      <DashboardSidebar />
+      {/* Sidebar (desktop + mobile drawer) */}
+      <DashboardSidebar mobileOpen={sidebarOpen} onMobileClose={() => setSidebarOpen(false)} />
 
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (

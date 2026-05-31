@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Heart, Archive, Tag, Settings, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
+import { LayoutDashboard, FileText, Heart, Archive, Tag, Settings, ChevronLeft, ChevronRight, Sparkles, X } from 'lucide-react';
 import { useState } from 'react';
 
 const navItems = [
@@ -15,7 +15,12 @@ const navItems = [
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ];
 
-export function DashboardSidebar() {
+type DashboardSidebarProps = {
+  mobileOpen?: boolean;
+  onMobileClose?: () => void;
+};
+
+export function DashboardSidebar({ mobileOpen = false, onMobileClose }: DashboardSidebarProps) {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -46,7 +51,9 @@ export function DashboardSidebar() {
         {/* Navigation */}
         <nav className="flex-1 p-4 space-y-2">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = item.href === '/dashboard'
+              ? pathname === item.href
+              : pathname === item.href || pathname.startsWith(`${item.href}/`);
             const Icon = item.icon;
             return (
               <Link
@@ -72,7 +79,56 @@ export function DashboardSidebar() {
         </div>
       </div>
 
-      {/* Mobile Navigation Button - shown in header */}
+      {/* Mobile Sidebar */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-30 w-64 border-r border-border bg-card/95 backdrop-blur-md transition-transform duration-300 md:hidden ${
+          mobileOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="flex items-center justify-between p-6 border-b border-border">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-accent text-accent-foreground font-bold text-sm">
+              F
+            </div>
+            <span className="font-semibold text-foreground">FlowNote</span>
+          </div>
+          <button
+            onClick={onMobileClose}
+            className="p-1.5 rounded-lg hover:bg-muted transition-colors text-foreground/60"
+            aria-label="Close sidebar"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <nav className="p-4 space-y-2">
+          {navItems.map((item) => {
+            const isActive = item.href === '/dashboard'
+              ? pathname === item.href
+              : pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onMobileClose}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors ${
+                  isActive
+                    ? 'bg-accent/10 text-accent font-medium'
+                    : 'text-foreground/70 hover:text-foreground hover:bg-muted/50'
+                }`}
+              >
+                <Icon size={20} className="flex-shrink-0" />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border text-xs text-foreground/50 text-center">
+          <p>© FlowNote by raytech.cloud</p>
+        </div>
+      </aside>
     </>
   );
 }

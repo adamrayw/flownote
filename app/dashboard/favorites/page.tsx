@@ -148,14 +148,18 @@ export default function FavoritesPage() {
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-lg text-foreground group-hover:text-accent transition-colors truncate">
-                    {note.title}
-                  </h3>
+                  <Link href={`/dashboard/notes/${note.id}`}>
+                    <h3 className="font-semibold text-lg text-foreground group-hover:text-accent transition-colors truncate">
+                      {note.title}
+                    </h3>
+                  </Link>
 
-                  <NoteMarkdown
-                    content={note.content || 'No content yet.'}
-                    className="text-foreground/70 mt-2 max-h-24 overflow-hidden"
-                  />
+                  <Link href={`/dashboard/notes/${note.id}`}>
+                    <NoteMarkdown
+                      content={note.content || 'No content yet.'}
+                      className="text-foreground/70 mt-2 max-h-24 overflow-hidden hover:text-foreground/85 transition-colors"
+                    />
+                  </Link>
 
                   <div className="flex items-center gap-2 mt-4 flex-wrap">
                     {note.tags.map((tag) => (

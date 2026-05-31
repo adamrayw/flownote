@@ -2,20 +2,31 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 export default function SignIn() {
   const router = useRouter();
+  const { status } = useSession();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.replace('/dashboard');
+    }
+  }, [router, status]);
+
+  if (status === 'loading' || status === 'authenticated') {
+    return <div className="min-h-screen bg-background grid place-items-center text-sm text-foreground/60">Checking session...</div>;
+  }
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();

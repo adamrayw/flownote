@@ -4,6 +4,8 @@ import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 
 export default function Page() {
+  const SHOW_PRICING_SECTION = false
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       {/* Navigation */}
@@ -261,99 +263,100 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" className="px-6 md:px-12 py-24 bg-card/50">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center space-y-4 mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground">
-              Simple, transparent pricing
-            </h2>
-            <p className="text-lg text-foreground/60 max-w-2xl mx-auto">
-              Start free. Scale as you grow. Always have a plan that fits your needs.
-            </p>
-          </div>
+      {SHOW_PRICING_SECTION ? (
+        <section id="pricing" className="px-6 md:px-12 py-24 bg-card/50">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center space-y-4 mb-16">
+              <h2 className="text-4xl md:text-5xl font-bold text-foreground">
+                Simple, transparent pricing
+              </h2>
+              <p className="text-lg text-foreground/60 max-w-2xl mx-auto">
+                Start free. Scale as you grow. Always have a plan that fits your needs.
+              </p>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                name: 'Free',
-                price: '$0',
-                description: 'Perfect to get started',
-                features: [
-                  'Unlimited notes',
-                  'Basic search',
-                  'Mobile & desktop apps',
-                  'Community support',
-                ],
-                cta: 'Start Free',
-                highlight: false,
-              },
-              {
-                name: 'Pro',
-                price: '$8',
-                description: '/month, billed annually',
-                features: [
-                  'Everything in Free',
-                  'AI-powered summaries',
-                  'Action items and smart tags',
-                  'Advanced search filters',
-                  'Priority support',
-                  'Custom themes',
-                ],
-                cta: 'Start Free Trial',
-                highlight: true,
-              },
-              {
-                name: 'Team',
-                price: 'Custom',
-                description: 'For organizations',
-                features: [
-                  'Everything in Pro',
-                  'Team collaboration',
-                  'Admin controls',
-                  'SSO & SAML',
-                  'Dedicated support',
-                ],
-                cta: 'Contact Sales',
-                highlight: false,
-              },
-            ].map((plan) => (
-              <div
-                key={plan.name}
-                className={`rounded-xl border p-8 transition-all duration-300 ${
-                  plan.highlight
-                    ? 'bg-accent/5 border-accent/40 shadow-lg scale-105'
-                    : 'bg-background border-border hover:border-accent/20'
-                }`}
-              >
-                <h3 className="text-2xl font-bold text-foreground mb-1">{plan.name}</h3>
-                <p className="text-sm text-foreground/60 mb-4">{plan.description}</p>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                </div>
-                <Button
-                  className={`w-full mb-8 h-10 font-medium rounded-lg ${
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[
+                {
+                  name: 'Free',
+                  price: '$0',
+                  description: 'Perfect to get started',
+                  features: [
+                    'Unlimited notes',
+                    'Basic search',
+                    'Mobile & desktop apps',
+                    'Community support',
+                  ],
+                  cta: 'Start Free',
+                  highlight: false,
+                },
+                {
+                  name: 'Pro',
+                  price: '$8',
+                  description: '/month, billed annually',
+                  features: [
+                    'Everything in Free',
+                    'AI-powered summaries',
+                    'Action items and smart tags',
+                    'Advanced search filters',
+                    'Priority support',
+                    'Custom themes',
+                  ],
+                  cta: 'Start Free Trial',
+                  highlight: true,
+                },
+                {
+                  name: 'Team',
+                  price: 'Custom',
+                  description: 'For organizations',
+                  features: [
+                    'Everything in Pro',
+                    'Team collaboration',
+                    'Admin controls',
+                    'SSO & SAML',
+                    'Dedicated support',
+                  ],
+                  cta: 'Contact Sales',
+                  highlight: false,
+                },
+              ].map((plan) => (
+                <div
+                  key={plan.name}
+                  className={`rounded-xl border p-8 transition-all duration-300 ${
                     plan.highlight
-                      ? 'bg-accent hover:bg-accent/90 text-accent-foreground'
-                      : 'border border-accent text-accent hover:bg-accent/5'
+                      ? 'bg-accent/5 border-accent/40 shadow-lg scale-105'
+                      : 'bg-background border-border hover:border-accent/20'
                   }`}
-                  variant={plan.highlight ? 'default' : 'outline'}
                 >
-                  {plan.cta}
-                </Button>
-                <ul className="space-y-3">
-                  {plan.features.map((feature) => (
-                    <li key={feature} className="flex gap-2 items-start text-sm text-foreground/70">
-                      <Check className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+                  <h3 className="text-2xl font-bold text-foreground mb-1">{plan.name}</h3>
+                  <p className="text-sm text-foreground/60 mb-4">{plan.description}</p>
+                  <div className="mb-6">
+                    <span className="text-4xl font-bold text-foreground">{plan.price}</span>
+                  </div>
+                  <Button
+                    className={`w-full mb-8 h-10 font-medium rounded-lg ${
+                      plan.highlight
+                        ? 'bg-accent hover:bg-accent/90 text-accent-foreground'
+                        : 'border border-accent text-accent hover:bg-accent/5'
+                    }`}
+                    variant={plan.highlight ? 'default' : 'outline'}
+                  >
+                    {plan.cta}
+                  </Button>
+                  <ul className="space-y-3">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex gap-2 items-start text-sm text-foreground/70">
+                        <Check className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       {/* CTA Section */}
       <section className="px-6 md:px-12 py-24">
