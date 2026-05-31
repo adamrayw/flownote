@@ -1,4 +1,7 @@
-const fallbackAuthBaseUrl = "http://localhost:3003";
+const fallbackAuthBaseUrl =
+  process.env.NODE_ENV === "production"
+    ? "https://auth.raytech.cloud"
+    : "http://localhost:3003";
 
 const raytechAuthBaseUrl = process.env.NEXT_PUBLIC_AUTH_URL || fallbackAuthBaseUrl;
 
