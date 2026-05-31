@@ -3,18 +3,22 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { signOut, useSession } from 'next-auth/react';
 import { Menu, Bell, Search, LogOut, Settings } from 'lucide-react';
+import { getAuthSignOutUrl } from '@/lib/raytech-account';
+import { useAuthSession } from '@/hooks/use-auth-session';
 
 export function DashboardHeader({ onMenuClick }: { onMenuClick?: () => void }) {
-  const { data: session } = useSession();
+  const { data: session } = useAuthSession();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const userName = session?.user?.name?.trim() || 'FlowNote User';
+  const userName =
+    session?.user?.name?.trim() ||
+    session?.user?.email?.split('@')[0] ||
+    'RayTech User';
   const initials = useMemo(() => {
     const parts = userName.split(' ').filter(Boolean);
     if (parts.length === 0) return 'FN';
@@ -42,6 +46,15 @@ export function DashboardHeader({ onMenuClick }: { onMenuClick?: () => void }) {
 
     const destination = params.toString() ? `/dashboard/notes?${params.toString()}` : '/dashboard/notes';
     router.push(destination);
+  };
+
+  const handleSignOut = async () => {
+    await fetch(getAuthSignOutUrl(), {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    window.location.href = '/signin';
   };
 
   return (
@@ -101,7 +114,7 @@ export function DashboardHeader({ onMenuClick }: { onMenuClick?: () => void }) {
                   className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground/70 hover:text-foreground hover:bg-muted transition-colors border-t border-border mt-1"
                   onClick={async () => {
                     setShowProfileMenu(false);
-                    await signOut({ callbackUrl: '/signin' });
+                    await handleSignOut();
                   }}
                 >
                   <LogOut size={16} />

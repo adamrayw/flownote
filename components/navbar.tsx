@@ -12,11 +12,12 @@ import {
 import { Menu, X, ChevronDown, LayoutDashboard, Settings, LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { signOut, useSession } from 'next-auth/react';
 import { useMemo, useState } from 'react';
+import { getAuthSignOutUrl } from '@/lib/raytech-account';
+import { useAuthSession } from '@/hooks/use-auth-session';
 
 export function Navbar() {
-  const { data: session, status } = useSession();
+  const { data: session, status } = useAuthSession();
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const isAuthenticated = status === 'authenticated';
@@ -37,13 +38,25 @@ export function Navbar() {
     return pathname.startsWith(href);
   };
 
-  const userName = session?.user?.name?.trim() || 'FlowNote User';
+  const userName =
+    session?.user?.name?.trim() ||
+    session?.user?.email?.split('@')[0] ||
+    'RayTech User';
   const initials = useMemo(() => {
     const parts = userName.split(' ').filter(Boolean);
     if (parts.length === 0) return 'FN';
     if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
     return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
   }, [userName]);
+
+  const handleSignOut = async () => {
+    await fetch(getAuthSignOutUrl(), {
+      method: 'POST',
+      credentials: 'include',
+    });
+
+    window.location.href = '/signin';
+  };
 
   return (
     <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-border bg-background/95 backdrop-blur-sm px-6 py-4 md:px-12 md:py-6">
@@ -106,9 +119,7 @@ export function Navbar() {
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 variant="destructive"
-                onClick={async () => {
-                  await signOut({ callbackUrl: '/signin' });
-                }}
+                onClick={handleSignOut}
               >
                 <LogOut className="w-4 h-4" />
                 Sign Out
@@ -179,7 +190,7 @@ export function Navbar() {
                     className="text-sm w-full"
                     onClick={async () => {
                       setIsOpen(false);
-                      await signOut({ callbackUrl: '/signin' });
+                      await handleSignOut();
                     }}
                   >
                     Sign Out

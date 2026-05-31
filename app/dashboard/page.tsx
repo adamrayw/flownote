@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Plus, Tag, FileText, ArrowRight, Heart, Archive, Sparkles } from 'lucide-react';
 import { NoteMarkdown } from '@/components/note-markdown';
+import { useAuthSession } from '@/hooks/use-auth-session';
 
 type TagItem = {
   id: string;
@@ -49,7 +49,7 @@ function getUserFirstName(name?: string | null) {
 }
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
+  const { data: session } = useAuthSession();
   const [notes, setNotes] = useState<NoteItem[]>([]);
   const [archivedCount, setArchivedCount] = useState(0);
   const [tags, setTags] = useState<TagSummary[]>([]);

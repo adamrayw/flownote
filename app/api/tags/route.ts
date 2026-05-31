@@ -1,23 +1,21 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { z } from "zod";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getAuthorizedRaytechUser } from "@/lib/raytech-account";
 
 const createTagSchema = z.object({
   name: z.string().trim().min(1, "Tag name is required").max(30, "Tag name is too long"),
   color: z.string().trim().optional(),
 });
 
-export async function GET() {
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user?.id || session.auth.error === "RefreshTokenExpired") {
+export async function GET(request: Request) {
+  const user = await getAuthorizedRaytechUser(request);
+  if (!user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   const tags = await prisma.tag.findMany({
-    where: { userId: session.user.id },
+    where: { userId: user.id },
     include: {
       _count: {
         select: {
@@ -41,9 +39,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user?.id || session.auth.error === "RefreshTokenExpired") {
+  const user = await getAuthorizedRaytechUser(request);
+  if (!user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
@@ -60,7 +57,7 @@ export async function POST(request: Request) {
 
   const existingTag = await prisma.tag.findFirst({
     where: {
-      userId: session.user.id,
+      userId: user.id,
       name: {
         equals: normalizedName,
         mode: "insensitive",
@@ -77,7 +74,7 @@ export async function POST(request: Request) {
     data: {
       name: normalizedName,
       color: color || null,
-      userId: session.user.id,
+      userId: user.id,
     },
   });
 

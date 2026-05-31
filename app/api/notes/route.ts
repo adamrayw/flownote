@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { z } from "zod";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getAuthorizedRaytechUser } from "@/lib/raytech-account";
 
 const createNoteSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(120, "Title is too long"),
@@ -11,9 +10,8 @@ const createNoteSchema = z.object({
 });
 
 export async function GET(request: Request) {
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user?.id || session.auth.error === "RefreshTokenExpired") {
+  const user = await getAuthorizedRaytechUser(request);
+  if (!user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
@@ -25,7 +23,7 @@ export async function GET(request: Request) {
 
   const notes = await prisma.note.findMany({
     where: {
-      userId: session.user.id,
+      userId: user.id,
       ...(query
         ? {
             OR: [
@@ -77,9 +75,8 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user?.id || session.auth.error === "RefreshTokenExpired") {
+  const user = await getAuthorizedRaytechUser(request);
+  if (!user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
@@ -97,7 +94,7 @@ export async function POST(request: Request) {
     const validTags = await prisma.tag.findMany({
       where: {
         id: { in: tagIds },
-        userId: session.user.id,
+        userId: user.id,
       },
       select: { id: true },
     });
@@ -113,7 +110,7 @@ export async function POST(request: Request) {
       content,
       isFavorite: false,
       isArchived: false,
-      userId: session.user.id,
+      userId: user.id,
       noteTags: {
         create: [...new Set(tagIds)].map((tagId) => ({ tagId })),
       },

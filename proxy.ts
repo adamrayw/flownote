@@ -1,26 +1,36 @@
-import { withAuth } from "next-auth/middleware";
+import { NextResponse, type NextRequest } from "next/server";
+import {
+  buildAuthLoginUrl,
+  buildAuthRegisterUrl,
+  raytechSessionCookieName,
+} from "@/lib/raytech-account";
 
-export default withAuth({
-  pages: {
-    signIn: "/signin",
-  },
-  callbacks: {
-    authorized: ({ token }) => {
-      if (!token) {
-        return false;
-      }
+export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const sessionCookie = request.cookies.get(raytechSessionCookieName)?.value;
+  const isAuthenticated = Boolean(sessionCookie);
 
-      const now = Math.floor(Date.now() / 1000);
-      const refreshTokenExpiresAt = Number(token.refreshTokenExpiresAt ?? 0);
-      if (!refreshTokenExpiresAt || now >= refreshTokenExpiresAt) {
-        return false;
-      }
+  if (pathname.startsWith("/dashboard") && !isAuthenticated) {
+    return NextResponse.redirect(new URL(buildAuthLoginUrl(request.url)));
+  }
 
-      return true;
-    },
-  },
-});
+  if (pathname === "/signin") {
+    if (isAuthenticated) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+    return NextResponse.redirect(new URL(buildAuthLoginUrl(request.url)));
+  }
+
+  if (pathname === "/signup") {
+    if (isAuthenticated) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+    return NextResponse.redirect(new URL(buildAuthRegisterUrl(request.url)));
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/dashboard/:path*", "/signin", "/signup"],
 };

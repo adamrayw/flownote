@@ -3,7 +3,7 @@
 FlowNote sekarang sudah disiapkan dengan:
 - PostgreSQL
 - Prisma ORM
-- Auth (NextAuth Credentials: email + password)
+- RayTech Account SSO (auth terpusat)
 
 ## 1) Install dependency
 
@@ -25,7 +25,10 @@ Di Windows PowerShell:
 Copy-Item .env.example .env
 ```
 
-Lalu isi `NEXTAUTH_SECRET` dengan random string yang panjang.
+Pastikan environment SSO terisi:
+- `NEXT_PUBLIC_AUTH_URL`
+- `RAYTECH_AUTH_URL`
+- `RAYTECH_SESSION_COOKIE_NAME`
 
 Untuk fitur AI di dashboard, isi juga:
 
@@ -56,13 +59,12 @@ npm run dev
 
 Buka `http://localhost:3000`.
 
-## Alur Auth yang tersedia
+## Alur Auth
 
-- Register: `POST /api/auth/register`
-- Login: NextAuth Credentials via `/signin`
-- Refresh session token: `POST /api/auth/refresh`
-- Logout: tersedia di menu profile dashboard
+- Login/register diarahkan ke RayTech Account (`auth.raytech.cloud` atau URL auth lokal)
+- Produk ini tidak lagi menyimpan credential login sendiri
 - Protected route: semua `/dashboard/*` wajib login
+- Endpoint session produk: `GET /api/auth/me`
 
 ## AI Workspace
 

@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { Prisma } from "@prisma/client";
 import { z } from "zod";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getAuthorizedRaytechUser } from "@/lib/raytech-account";
 
 const updateProfileSchema = z
   .object({
@@ -14,93 +12,65 @@ const updateProfileSchema = z
     message: "Nothing to update",
   });
 
-async function getAuthorizedUserId() {
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user?.id || session.auth.error === "RefreshTokenExpired") {
-    return null;
-  }
-
-  return session.user.id;
-}
-
-export async function GET() {
-  const userId = await getAuthorizedUserId();
-  if (!userId) {
+export async function GET(request: Request) {
+  const user = await getAuthorizedRaytechUser(request);
+  if (!user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
+  const localUser = await prisma.user.findUnique({
+    where: { id: user.id },
     select: {
-      id: true,
-      name: true,
-      email: true,
       createdAt: true,
       updatedAt: true,
     },
   });
 
-  if (!user) {
-    return NextResponse.json({ message: "User not found" }, { status: 404 });
-  }
-
-  return NextResponse.json({ user });
+  return NextResponse.json({
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      createdAt: localUser?.createdAt ?? new Date().toISOString(),
+      updatedAt: localUser?.updatedAt ?? new Date().toISOString(),
+    },
+  });
 }
 
 export async function PATCH(request: Request) {
-  try {
-    const userId = await getAuthorizedUserId();
-    if (!userId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const parsed = updateProfileSchema.safeParse(await request.json());
-    if (!parsed.success) {
-      return NextResponse.json(
-        { message: parsed.error.issues[0]?.message ?? "Invalid request payload" },
-        { status: 400 },
-      );
-    }
-
-    const nextName = parsed.data.name;
-    const nextEmail = parsed.data.email?.toLowerCase();
-
-    if (nextEmail) {
-      const existing = await prisma.user.findFirst({
-        where: {
-          email: nextEmail,
-          NOT: { id: userId },
-        },
-        select: { id: true },
-      });
-
-      if (existing) {
-        return NextResponse.json({ message: "Email is already registered" }, { status: 409 });
-      }
-    }
-
-    const updated = await prisma.user.update({
-      where: { id: userId },
-      data: {
-        ...(typeof nextName === "string" ? { name: nextName } : {}),
-        ...(typeof nextEmail === "string" ? { email: nextEmail } : {}),
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    return NextResponse.json({ user: updated });
-  } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-      return NextResponse.json({ message: "Email is already registered" }, { status: 409 });
-    }
-
-    return NextResponse.json({ message: "Failed to update profile" }, { status: 500 });
+  const user = await getAuthorizedRaytechUser(request);
+  if (!user) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
+
+  const parsed = updateProfileSchema.safeParse(await request.json());
+  if (!parsed.success) {
+    return NextResponse.json(
+      { message: parsed.error.issues[0]?.message ?? "Invalid request payload" },
+      { status: 400 },
+    );
+  }
+
+  const nextName = parsed.data.name;
+  const nextEmail = parsed.data.email;
+
+  if ((nextEmail && nextEmail !== user.email) || (nextName && nextName !== user.name)) {
+    return NextResponse.json(
+      {
+        message:
+          "Profile fields are managed by RayTech Account. Update your profile from auth.raytech.cloud.",
+      },
+      { status: 400 },
+    );
+  }
+
+  return NextResponse.json({
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+  });
 }

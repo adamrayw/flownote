@@ -1,18 +1,12 @@
 import { NextResponse } from "next/server";
 import { getAuthorizedRaytechUser } from "@/lib/raytech-account";
 
-export async function PATCH(request: Request) {
+export async function GET(request: Request) {
   const user = await getAuthorizedRaytechUser(request);
 
   if (!user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  return NextResponse.json(
-    {
-      message:
-        "Password is managed by RayTech Account. Update it from auth.raytech.cloud/account settings.",
-    },
-    { status: 400 },
-  );
+  return NextResponse.json({ user });
 }

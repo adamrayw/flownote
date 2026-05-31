@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { z } from "zod";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getAuthorizedRaytechUser } from "@/lib/raytech-account";
 
 const aiRequestSchema = z.object({
   mode: z.enum(["summary", "action-items", "rewrite", "smart-tags", "ask-notes"]),
@@ -206,9 +205,8 @@ function sanitizeModelOutput(raw: string) {
 }
 
 export async function POST(request: Request) {
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user?.id || session.auth.error === "RefreshTokenExpired") {
+  const user = await getAuthorizedRaytechUser(request);
+  if (!user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
@@ -236,7 +234,7 @@ export async function POST(request: Request) {
     let effectivePrompt = getUserPrompt(mode, input);
 
     if (mode === "ask-notes") {
-      const askNotesPrompt = await buildAskNotesPrompt(session.user.id, input);
+      const askNotesPrompt = await buildAskNotesPrompt(user.id, input);
       if (!askNotesPrompt) {
         return NextResponse.json(
           { message: "You don't have any notes yet. Create notes first, then use Ask Notes." },
@@ -252,7 +250,7 @@ export async function POST(request: Request) {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${apiKey}`,
-          "HTTP-Referer": process.env.NEXTAUTH_URL || "http://localhost:3000",
+          "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
           "X-Title": "FlowNote",
         },
         body: JSON.stringify({

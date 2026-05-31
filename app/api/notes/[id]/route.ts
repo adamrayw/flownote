@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { z } from "zod";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getAuthorizedRaytechUser } from "@/lib/raytech-account";
 
 const updateNoteSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(120, "Title is too long").optional(),
@@ -12,19 +11,16 @@ const updateNoteSchema = z.object({
   tagIds: z.array(z.string()).optional(),
 });
 
-async function getAuthorizedUserId() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id || session.auth.error === "RefreshTokenExpired") {
-    return null;
-  }
-  return session.user.id;
+async function getAuthorizedUserId(request: Request) {
+  const user = await getAuthorizedRaytechUser(request);
+  return user?.id ?? null;
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const userId = await getAuthorizedUserId();
+  const userId = await getAuthorizedUserId(request);
   if (!userId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
@@ -71,7 +67,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const userId = await getAuthorizedUserId();
+  const userId = await getAuthorizedUserId(request);
   if (!userId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
@@ -154,10 +150,10 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const userId = await getAuthorizedUserId();
+  const userId = await getAuthorizedUserId(request);
   if (!userId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }

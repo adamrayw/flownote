@@ -1,9 +1,9 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Lock, Settings, User } from 'lucide-react';
+import { useAuthSession } from '@/hooks/use-auth-session';
 
 type MeResponse = {
   user: {
@@ -24,7 +24,7 @@ function formatDate(value: string) {
 }
 
 export default function SettingsPage() {
-  const { update } = useSession();
+  const { update } = useAuthSession();
 
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -187,6 +187,9 @@ export default function SettingsPage() {
             <User size={20} className="text-accent" />
             <h2 className="text-xl font-semibold text-foreground">Account</h2>
           </div>
+          <p className="text-xs text-foreground/60 mb-4">
+            Profile and password are managed by RayTech Account.
+          </p>
 
           {isLoading ? (
             <p className="text-sm text-foreground/60">Loading account...</p>
@@ -229,6 +232,9 @@ export default function SettingsPage() {
             <Lock size={20} className="text-accent" />
             <h2 className="text-xl font-semibold text-foreground">Security</h2>
           </div>
+          <p className="text-xs text-foreground/60 mb-4">
+            Change your password from auth.raytech.cloud.
+          </p>
 
           <form className="space-y-4" onSubmit={handleChangePassword}>
             <div>

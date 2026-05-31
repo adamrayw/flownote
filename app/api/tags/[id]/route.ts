@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getAuthorizedRaytechUser } from "@/lib/raytech-account";
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await getServerSession(authOptions);
-
-  if (!session?.user?.id || session.auth.error === "RefreshTokenExpired") {
+  const user = await getAuthorizedRaytechUser(request);
+  if (!user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
@@ -18,7 +16,7 @@ export async function DELETE(
   const tag = await prisma.tag.findFirst({
     where: {
       id,
-      userId: session.user.id,
+      userId: user.id,
     },
     select: { id: true },
   });
