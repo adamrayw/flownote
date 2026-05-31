@@ -1,7 +1,29 @@
-import { redirect } from "next/navigation";
+"use client";
 
-import { buildAuthLoginUrl } from "@/lib/raytech-account";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+import { buildAuthLoginUrl } from "@/lib/raytech-auth-client";
 
 export default function SignInPage() {
-  redirect(buildAuthLoginUrl());
+  const [authUrl, setAuthUrl] = useState(() => buildAuthLoginUrl());
+
+  useEffect(() => {
+    const returnTo = new URLSearchParams(window.location.search).get("returnTo") ?? undefined;
+    const nextAuthUrl = buildAuthLoginUrl(returnTo);
+    setAuthUrl(nextAuthUrl);
+
+    window.location.replace(nextAuthUrl);
+  }, []);
+
+  return (
+    <main className="flex min-h-screen items-center justify-center bg-background px-6 text-center">
+      <div className="space-y-3">
+        <p className="text-sm text-foreground/70">Redirecting to RayTech Account...</p>
+        <Link className="text-sm text-accent hover:text-accent/90" href={authUrl}>
+          Continue to login
+        </Link>
+      </div>
+    </main>
+  );
 }

@@ -1,10 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import {
-  buildAuthLoginUrl,
-  buildAuthRegisterUrl,
-  raytechSessionCookieName,
-  resolveProductReturnTo,
-} from "@/lib/raytech-account";
+import { raytechSessionCookieName, resolveProductReturnTo } from "@/lib/raytech-account";
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -12,21 +7,26 @@ export async function proxy(request: NextRequest) {
   const isAuthenticated = Boolean(sessionCookie);
 
   if (pathname.startsWith("/dashboard") && !isAuthenticated) {
-    return NextResponse.redirect(new URL(buildAuthLoginUrl(resolveProductReturnTo(request.url))));
+    const signInUrl = new URL("/signin", request.url);
+    const returnTo = resolveProductReturnTo(request.url);
+    if (returnTo) {
+      signInUrl.searchParams.set("returnTo", returnTo);
+    }
+    return NextResponse.redirect(signInUrl);
   }
 
   if (pathname === "/signin") {
     if (isAuthenticated) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
-    return NextResponse.redirect(new URL(buildAuthLoginUrl(resolveProductReturnTo(request.url))));
+    return NextResponse.next();
   }
 
   if (pathname === "/signup") {
     if (isAuthenticated) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
-    return NextResponse.redirect(new URL(buildAuthRegisterUrl(resolveProductReturnTo(request.url))));
+    return NextResponse.next();
   }
 
   return NextResponse.next();
