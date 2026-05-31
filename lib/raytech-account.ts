@@ -7,10 +7,10 @@ export type RaytechUser = {
 };
 
 const fallbackAuthBaseUrl =
-  process.env.NODE_ENV === "production"
-    ? "https://auth.raytech.cloud"
-    : "http://localhost:3003";
-const fallbackAppBaseUrl = "http://localhost:3000";
+  process.env.RAYTECH_AUTH_URL ||
+  "https://auth.raytech.cloud";
+
+  const fallbackAppBaseUrl = "http://localhost:3000";
 
 const configuredAuthBaseUrl =
   process.env.RAYTECH_AUTH_URL ||
