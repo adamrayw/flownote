@@ -9,8 +9,7 @@ export type RaytechUser = {
 const fallbackAuthBaseUrl =
   process.env.RAYTECH_AUTH_URL ||
   "https://auth.raytech.cloud";
-
-  const fallbackAppBaseUrl = "http://localhost:3000";
+const fallbackAppBaseUrl = "http://localhost:3000";
 
 const configuredAuthBaseUrl =
   process.env.RAYTECH_AUTH_URL ||
@@ -37,6 +36,7 @@ export const raytechSessionCookieNames = Array.from(
 
 
 const LOCAL_PASSWORD_PLACEHOLDER = "__managed_by_raytech_account__";
+const authDebugEnabled = process.env.RAYTECH_AUTH_DEBUG === "1";
 
 function fallbackNameFromEmail(email: string) {
   const localPart = email.split("@")[0]?.trim();
@@ -45,6 +45,20 @@ function fallbackNameFromEmail(email: string) {
 
 function getAuthUrl(path: string) {
   return new URL(path, raytechAuthBaseUrl).toString();
+}
+
+function logAuthDebug(message: string, details?: Record<string, unknown>) {
+  if (!authDebugEnabled) {
+    return;
+  }
+
+  console.info("[raytech-auth]", message, {
+    authBaseUrl: raytechAuthBaseUrl,
+    rAuth: process.env.RAYTECH_AUTH_URL || null,
+    npAuth: process.env.NEXT_PUBLIC_AUTH_URL || null,
+    nodeEnv: process.env.NODE_ENV || null,
+    ...details,
+  });
 }
 
 function isLocalHostname(hostname: string) {
@@ -107,13 +121,37 @@ export async function getRaytechUserByCookie(params: {
     headers.set("x-raytech-origin", params.origin);
   }
 
-  const response = await fetch(getAuthUrl("/api/me"), {
-    method: "GET",
-    headers,
-    cache: "no-store",
+  const authMeUrl = getAuthUrl("/api/me");
+  logAuthDebug("request /api/me", {
+    authMeUrl,
+    hasCookieHeader: Boolean(params.cookieHeader),
+    origin: params.origin || null,
   });
 
+  let response: Response;
+  try {
+    response = await fetch(authMeUrl, {
+      method: "GET",
+      headers,
+      cache: "no-store",
+    });
+  } catch (error) {
+    console.error("[raytech-auth] fetch /api/me failed", {
+      authMeUrl,
+      authBaseUrl: raytechAuthBaseUrl,
+      rAuth: process.env.RAYTECH_AUTH_URL || null,
+      npAuth: process.env.NEXT_PUBLIC_AUTH_URL || null,
+      nodeEnv: process.env.NODE_ENV || null,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
+
   if (!response.ok) {
+    logAuthDebug("request /api/me returned non-ok", {
+      authMeUrl,
+      status: response.status,
+    });
     return null;
   }
 

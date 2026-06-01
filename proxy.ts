@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import {
   buildAuthLoginUrl,
   buildAuthRegisterUrl,
+  raytechAuthBaseUrl,
   raytechSessionCookieNames,
   resolveProductReturnTo,
 } from "@/lib/raytech-account";
@@ -33,12 +34,36 @@ function isDocumentNavigation(request: NextRequest) {
   return mode === "navigate" || dest === "document" || accept.includes("text/html");
 }
 
+const authDebugEnabled = process.env.RAYTECH_AUTH_DEBUG === "1";
+
+function logProxyDebug(message: string, details?: Record<string, unknown>) {
+  if (!authDebugEnabled) {
+    return;
+  }
+
+  console.info("[raytech-proxy]", message, {
+    authBaseUrl: raytechAuthBaseUrl,
+    rAuth: process.env.RAYTECH_AUTH_URL || null,
+    npAuth: process.env.NEXT_PUBLIC_AUTH_URL || null,
+    nodeEnv: process.env.NODE_ENV || null,
+    ...details,
+  });
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = raytechSessionCookieNames
     .map((cookieName) => request.cookies.get(cookieName)?.value)
     .find(Boolean);
   const isAuthenticated = Boolean(sessionCookie);
+  const isDocNav = isDocumentNavigation(request);
+
+  logProxyDebug("incoming request", {
+    pathname,
+    hasSessionCookie: isAuthenticated,
+    isDocumentNavigation: isDocNav,
+    search: request.nextUrl.search,
+  });
 
   if (pathname.startsWith("/dashboard") && !isAuthenticated) {
     const returnTo = resolveProductReturnTo(request.url);
@@ -46,17 +71,25 @@ export async function proxy(request: NextRequest) {
     if (returnTo) {
       signInUrl.searchParams.set("returnTo", returnTo);
     }
+    logProxyDebug("redirect unauthenticated dashboard request to local signin", {
+      redirectTo: signInUrl.toString(),
+    });
     return NextResponse.redirect(signInUrl);
   }
 
   if (pathname === "/signin") {
     if (isAuthenticated) {
+      logProxyDebug("redirect authenticated signin request to dashboard", {
+        redirectTo: new URL("/dashboard", request.url).toString(),
+      });
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
-    if (isDocumentNavigation(request)) {
+    if (isDocNav) {
       const returnTo = request.nextUrl.searchParams.get("returnTo") || undefined;
-      return NextResponse.redirect(new URL(buildAuthLoginUrl(returnTo)));
+      const redirectTo = buildAuthLoginUrl(returnTo);
+      logProxyDebug("redirect signin to auth login", { redirectTo });
+      return NextResponse.redirect(new URL(redirectTo));
     }
 
     return NextResponse.next();
@@ -64,12 +97,17 @@ export async function proxy(request: NextRequest) {
 
   if (pathname === "/signup") {
     if (isAuthenticated) {
+      logProxyDebug("redirect authenticated signup request to dashboard", {
+        redirectTo: new URL("/dashboard", request.url).toString(),
+      });
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
 
-    if (isDocumentNavigation(request)) {
+    if (isDocNav) {
       const returnTo = request.nextUrl.searchParams.get("returnTo") || undefined;
-      return NextResponse.redirect(new URL(buildAuthRegisterUrl(returnTo)));
+      const redirectTo = buildAuthRegisterUrl(returnTo);
+      logProxyDebug("redirect signup to auth register", { redirectTo });
+      return NextResponse.redirect(new URL(redirectTo));
     }
 
     return NextResponse.next();
