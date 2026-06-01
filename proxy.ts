@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import {
   buildAuthLoginUrl,
   buildAuthRegisterUrl,
+  flownoteAppBaseUrl,
   raytechAuthBaseUrl,
   raytechSessionCookieNames,
   resolveProductReturnTo,
@@ -50,6 +51,10 @@ function logProxyDebug(message: string, details?: Record<string, unknown>) {
   });
 }
 
+function buildProductUrl(path: string) {
+  return new URL(path, flownoteAppBaseUrl);
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = raytechSessionCookieNames
@@ -67,7 +72,7 @@ export async function proxy(request: NextRequest) {
 
   if (pathname.startsWith("/dashboard") && !isAuthenticated) {
     const returnTo = resolveProductReturnTo(request.url);
-    const signInUrl = new URL("/signin", request.url);
+    const signInUrl = buildProductUrl("/signin");
     if (returnTo) {
       signInUrl.searchParams.set("returnTo", returnTo);
     }
@@ -80,9 +85,9 @@ export async function proxy(request: NextRequest) {
   if (pathname === "/signin") {
     if (isAuthenticated) {
       logProxyDebug("redirect authenticated signin request to dashboard", {
-        redirectTo: new URL("/dashboard", request.url).toString(),
+        redirectTo: buildProductUrl("/dashboard").toString(),
       });
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return NextResponse.redirect(buildProductUrl("/dashboard"));
     }
 
     if (isDocNav) {
@@ -98,9 +103,9 @@ export async function proxy(request: NextRequest) {
   if (pathname === "/signup") {
     if (isAuthenticated) {
       logProxyDebug("redirect authenticated signup request to dashboard", {
-        redirectTo: new URL("/dashboard", request.url).toString(),
+        redirectTo: buildProductUrl("/dashboard").toString(),
       });
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return NextResponse.redirect(buildProductUrl("/dashboard"));
     }
 
     if (isDocNav) {
