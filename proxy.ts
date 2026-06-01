@@ -55,8 +55,13 @@ function buildProductUrl(path: string) {
   return new URL(path, flownoteAppBaseUrl);
 }
 
+function getCookieNames(request: NextRequest) {
+  return request.cookies.getAll().map((cookie) => cookie.name);
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const cookieNames = getCookieNames(request);
   const sessionCookie = raytechSessionCookieNames
     .map((cookieName) => request.cookies.get(cookieName)?.value)
     .find(Boolean);
@@ -66,8 +71,13 @@ export async function proxy(request: NextRequest) {
   logProxyDebug("incoming request", {
     pathname,
     hasSessionCookie: isAuthenticated,
+    expectedSessionCookieNames: raytechSessionCookieNames,
+    receivedCookieNames: cookieNames,
     isDocumentNavigation: isDocNav,
     search: request.nextUrl.search,
+    host: request.headers.get("host"),
+    xForwardedHost: request.headers.get("x-forwarded-host"),
+    xForwardedProto: request.headers.get("x-forwarded-proto"),
   });
 
   if (pathname.startsWith("/dashboard") && !isAuthenticated) {
@@ -83,13 +93,6 @@ export async function proxy(request: NextRequest) {
   }
 
   if (pathname === "/signin") {
-    if (isAuthenticated) {
-      logProxyDebug("redirect authenticated signin request to dashboard", {
-        redirectTo: buildProductUrl("/dashboard").toString(),
-      });
-      return NextResponse.redirect(buildProductUrl("/dashboard"));
-    }
-
     if (isDocNav) {
       const returnTo = request.nextUrl.searchParams.get("returnTo") || undefined;
       const redirectTo = buildAuthLoginUrl(returnTo);
@@ -101,13 +104,6 @@ export async function proxy(request: NextRequest) {
   }
 
   if (pathname === "/signup") {
-    if (isAuthenticated) {
-      logProxyDebug("redirect authenticated signup request to dashboard", {
-        redirectTo: buildProductUrl("/dashboard").toString(),
-      });
-      return NextResponse.redirect(buildProductUrl("/dashboard"));
-    }
-
     if (isDocNav) {
       const returnTo = request.nextUrl.searchParams.get("returnTo") || undefined;
       const redirectTo = buildAuthRegisterUrl(returnTo);
