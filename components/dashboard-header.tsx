@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Menu, Bell, Search, LogOut, Settings } from 'lucide-react';
-import { getAuthSignOutUrl } from '@/lib/raytech-account';
+import { buildAuthLogoutUrl } from '@/lib/raytech-account';
 import { useAuthSession } from '@/hooks/use-auth-session';
 
 export function DashboardHeader({ onMenuClick }: { onMenuClick?: () => void }) {
@@ -49,17 +49,7 @@ export function DashboardHeader({ onMenuClick }: { onMenuClick?: () => void }) {
   };
 
   const handleSignOut = async () => {
-    await fetch(getAuthSignOutUrl(), {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'content-type': 'application/json',
-        accept: 'application/json',
-      },
-      body: JSON.stringify({}),
-    });
-
-    window.location.href = '/signin';
+    window.location.href = buildAuthLogoutUrl(`${window.location.origin}/signin`);
   };
 
   return (

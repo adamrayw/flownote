@@ -13,7 +13,7 @@ import { Menu, X, ChevronDown, LayoutDashboard, Settings, LogOut } from 'lucide-
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import { getAuthSignOutUrl } from '@/lib/raytech-account';
+import { buildAuthLogoutUrl } from '@/lib/raytech-account';
 import { useAuthSession } from '@/hooks/use-auth-session';
 
 export function Navbar() {
@@ -50,17 +50,7 @@ export function Navbar() {
   }, [userName]);
 
   const handleSignOut = async () => {
-    await fetch(getAuthSignOutUrl(), {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'content-type': 'application/json',
-        accept: 'application/json',
-      },
-      body: JSON.stringify({}),
-    });
-
-    window.location.href = '/signin';
+    window.location.href = buildAuthLogoutUrl(`${window.location.origin}/signin`);
   };
 
   return (
