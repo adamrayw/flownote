@@ -6,24 +6,37 @@ export type RaytechUser = {
   email: string;
 };
 
+function sanitizeEnvValue(value?: string) {
+  if (!value) {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  return trimmed.replace(/^['"]+|['"]+$/g, "");
+}
+
 const fallbackAuthBaseUrl =
   process.env.RAYTECH_AUTH_URL ||
   "https://auth.raytech.cloud";
 const fallbackAppBaseUrl = "http://localhost:3000";
 
 const configuredAuthBaseUrl =
-  process.env.RAYTECH_AUTH_URL ||
-  process.env.NEXT_PUBLIC_AUTH_URL;
+  sanitizeEnvValue(process.env.RAYTECH_AUTH_URL) ||
+  sanitizeEnvValue(process.env.NEXT_PUBLIC_AUTH_URL);
 
 export const raytechAuthBaseUrl = configuredAuthBaseUrl || fallbackAuthBaseUrl;
 
 export const flownoteAppBaseUrl =
-  process.env.NEXT_PUBLIC_APP_URL ||
+  sanitizeEnvValue(process.env.NEXT_PUBLIC_APP_URL) ||
   fallbackAppBaseUrl;
 
 export const raytechSessionCookieName =
-  process.env.RAYTECH_SESSION_COOKIE_NAME ||
-  process.env.COOKIE_NAME ||
+  sanitizeEnvValue(process.env.RAYTECH_SESSION_COOKIE_NAME) ||
+  sanitizeEnvValue(process.env.COOKIE_NAME) ||
   "raytech_session";
 
 export const raytechSessionCookieNames = Array.from(

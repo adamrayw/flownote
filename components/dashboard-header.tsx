@@ -52,6 +52,11 @@ export function DashboardHeader({ onMenuClick }: { onMenuClick?: () => void }) {
     await fetch(getAuthSignOutUrl(), {
       method: 'POST',
       credentials: 'include',
+      headers: {
+        'content-type': 'application/json',
+        accept: 'application/json',
+      },
+      body: JSON.stringify({}),
     });
 
     window.location.href = '/signin';
