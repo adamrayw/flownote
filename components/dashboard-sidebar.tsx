@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, FileText, Heart, Archive, Tag, Settings, ChevronLeft, ChevronRight, Sparkles, X } from 'lucide-react';
 import { useState } from 'react';
+import { FlowNoteLogo } from '@/components/brand/flownote-logo';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -34,9 +35,7 @@ export function DashboardSidebar({ mobileOpen = false, onMobileClose }: Dashboar
         <div className="flex items-center justify-between p-6 border-b border-border">
           {!isCollapsed && (
             <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-accent text-accent-foreground font-bold text-sm">
-                F
-              </div>
+              <FlowNoteLogo className="h-8 w-8" priority />
               <span className="font-semibold text-foreground">FlowNote</span>
             </div>
           )}
@@ -87,9 +86,7 @@ export function DashboardSidebar({ mobileOpen = false, onMobileClose }: Dashboar
       >
         <div className="flex items-center justify-between p-6 border-b border-border">
           <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-accent text-accent-foreground font-bold text-sm">
-              F
-            </div>
+            <FlowNoteLogo className="h-8 w-8" priority />
             <span className="font-semibold text-foreground">FlowNote</span>
           </div>
           <button

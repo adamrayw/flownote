@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Menu, Bell, Search, LogOut, Settings } from 'lucide-react';
 import { buildAuthLogoutUrl } from '@/lib/raytech-account';
 import { useAuthSession } from '@/hooks/use-auth-session';
+import { FlowNoteLogo } from '@/components/brand/flownote-logo';
 
 export function DashboardHeader({ onMenuClick }: { onMenuClick?: () => void }) {
   const { data: session } = useAuthSession();
@@ -62,7 +63,10 @@ export function DashboardHeader({ onMenuClick }: { onMenuClick?: () => void }) {
           >
             <Menu size={20} />
           </button>
-          <h1 className="text-xl font-semibold text-foreground hidden sm:block">FlowNote</h1>
+          <div className="hidden items-center gap-2 sm:flex">
+            <FlowNoteLogo className="h-8 w-8" priority />
+            <h1 className="text-xl font-semibold text-foreground">FlowNote</h1>
+          </div>
         </div>
 
         <form className="hidden md:flex flex-1 max-w-md mx-8" onSubmit={handleSearchSubmit}>

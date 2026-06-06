@@ -4,6 +4,7 @@ import { useState, FormEvent } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Mail, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react';
+import { FlowNoteLogo } from '@/components/brand/flownote-logo';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -44,9 +45,7 @@ export default function ForgotPasswordPage() {
       {/* Navigation */}
       <nav className="flex items-center border-b border-border px-6 py-4 md:px-12 md:py-6">
         <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-accent text-accent-foreground font-bold text-lg">
-            F
-          </div>
+          <FlowNoteLogo className="h-9 w-9" priority />
           <span className="text-xl font-semibold text-foreground">FlowNote</span>
         </div>
       </nav>

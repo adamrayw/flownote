@@ -15,6 +15,7 @@ import { usePathname } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { buildAuthLogoutUrl } from '@/lib/raytech-account';
 import { useAuthSession } from '@/hooks/use-auth-session';
+import { FlowNoteLogo } from '@/components/brand/flownote-logo';
 
 export function Navbar() {
   const { data: session, status } = useAuthSession();
@@ -57,9 +58,7 @@ export function Navbar() {
     <nav className="sticky top-0 z-50 flex items-center justify-between border-b border-border bg-background/95 backdrop-blur-sm px-6 py-4 md:px-12 md:py-6">
       {/* Logo */}
       <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-accent text-accent-foreground font-bold text-lg">
-          F
-        </div>
+        <FlowNoteLogo className="h-9 w-9" priority />
         <span className="text-xl font-semibold text-foreground hidden sm:inline">FlowNote</span>
       </Link>
 

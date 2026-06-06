@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { FlowNoteLogo } from '@/components/brand/flownote-logo';
 
 export function Footer() {
   return (
@@ -46,9 +47,7 @@ export function Footer() {
         <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex flex-col items-start gap-1">
             <div className="flex items-center gap-2">
-              <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-accent text-accent-foreground font-bold text-sm">
-                F
-              </div>
+              <FlowNoteLogo className="h-7 w-7" />
               <span className="font-semibold text-foreground">FlowNote</span>
             </div>
             <span className="text-xs text-foreground/50 uppercase tracking-wider">by raytech.cloud</span>
